@@ -1,0 +1,17 @@
+settings.ini
+/Python
+test.py
+twsapi_macunix.1019.01.zip
+listOrders.py
+*.log
+*.log.txt
+## IDE specific items
+.metadata
+bin/**
+tmp/**
+*.tmp
+*.bak
+*.swp
+*~.nib
+*.DS_Store
+/.htaccess
