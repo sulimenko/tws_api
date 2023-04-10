@@ -6,9 +6,22 @@ from ibapi.order import *
 import argparse
 import json
 import requests
+import configparser
 
 import threading
 import time
+
+# Configuration
+config = configparser.ConfigParser()
+config.read('settings.ini')
+
+host = config['TWS']['host']
+port = int(config['TWS']['port'])
+client_id = int(config['TWS']['client_id'])
+
+url = config['BACK']['url']
+token = config['BACK']['token']
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-account", "--account", required=True)
@@ -25,9 +38,6 @@ parser.add_argument("-tsp", "--trail_stop_price", required=False)
 
 params = parser.parse_args()
 # print(params)
-
-url = 'http://partnerfinance.test/api/tws/response'
-token = 'SVFEBZj4yQ'
 
 class IBapi(EWrapper, EClient):
 
@@ -87,7 +97,7 @@ def makeOrder(orderId, account, action, type, tif = 'DAY', orth = False, quantit
     return order
 
 app = IBapi()
-app.connect('127.0.0.1', 7496, 1)
+app.connect(host, port, client_id)
 
 app.nextorderId = None
 
