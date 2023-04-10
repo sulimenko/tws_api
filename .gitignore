@@ -1,5 +1,6 @@
 settings.ini
 /Python
+/ibapi/__pycache__
 test.py
 twsapi_macunix.1019.01.zip
 listOrders.py
