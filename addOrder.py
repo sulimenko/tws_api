@@ -55,7 +55,7 @@ class IBapi(EWrapper, EClient):
     
     def orderStatus(self, orderId , status:str, filled, remaining, avgFillPrice:float, permId:int,parentId:int, lastFillPrice:float, clientId:int, whyHeld:str, mktCapPrice: float):
         # print(json.dumps({ 'command' : 'orderStatus', 'orderId' : orderId, 'status' : status, 'filled' : filled, 'remaining' : remaining, 'avgFillPrice' : avgFillPrice, 'permId' : permId, 'parentId' : parentId, 'lastFillPrice' : lastFillPrice}, default=str))
-        sendResult({ 'command' : 'orderStatus', 'orderId' : orderId, 'status' : status, 'filled' : filled, 'remaining' : remaining, 'avgFillPrice' : avgFillPrice, 'permId' : permId, 'parentId' : parentId, 'lastFillPrice' : lastFillPrice});
+        sendResult({ 'command' : 'orderStatus', 'orderId' : orderId, 'status' : status, 'filled' : filled, 'remaining' : remaining, 'avgFillPrice' : avgFillPrice, 'permId' : permId, 'parentId' : parentId, 'lastFillPrice' : lastFillPrice})
 
 
 def run_loop():

@@ -1,4 +1,5 @@
 settings.ini
+/.vscode
 /Python
 /ibapi/__pycache__
 test.py
