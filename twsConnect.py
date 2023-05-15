@@ -51,9 +51,9 @@ class IBapi(EWrapper, EClient):
         if (reqId in self.requests):
             error = { 'code' : errorCode, 'dateTime' : getMilliseconds(), 'text' : errorString, 'advanced' : advancedOrderRejectJson }
             self.requests[reqId]['error']['list'].append(error)
-            if errorCode not in [ 399 ]:
+            if errorCode not in [ 399, 2109 ]:
                 self.requests[reqId]['error']['status'] = True
-                self.requests[reqId]['end'] = True
+                # self.requests[reqId]['end'] = True
         
     def nextValidId(self, orderId: int):
         super().nextValidId(orderId)
