@@ -13,7 +13,7 @@ import time
 
 # Configuration
 config = configparser.ConfigParser()
-config.read('/var/www/tws_api/settings.ini')
+config.read('/var/www/tws_api/settingsold.ini')
 
 host = config['TWS']['host']
 port = int(config['TWS']['port'])

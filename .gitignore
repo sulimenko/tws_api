@@ -1,4 +1,4 @@
-settings.ini
+settings*.ini
 /.vscode
 /Python
 /ibapi/__pycache__
