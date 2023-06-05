@@ -130,11 +130,11 @@ class IBapi(EWrapper, EClient):
         # print(data)
         if (orderId in self.requests):
             if self.requests[orderId]['command'] == 'placeOrder':
-                self.requests[orderId]['data']['orders'].append(data)
+                self.requests[orderId]['data']['orders'][order.permId] = data
         else:
             for each in self.requests:
                 if self.requests[each]['command'] == 'orders':
-                    self.requests[each]['data']['orders'].append(data)
+                    self.requests[each]['data']['orders'][order.permId] = data
     
     def openOrderEnd(self):
         super().openOrderEnd()
@@ -152,7 +152,7 @@ class IBapi(EWrapper, EClient):
         for each in self.requests:
             if self.requests[each]['command'] == 'orders':
                 foundOrders = True
-                self.requests[each]['data']['orders'].append(data)
+                self.requests[each]['data']['orders'][order.permId] = data
         if (not foundOrders):
             sendResult(data)
         # print('completedOrder', vars(contract), vars(order), vars(orderState))
@@ -232,7 +232,7 @@ def waitResponse(id, command, wait = 5):
         if tws.requests[id]['end']:
             responce['result'] = tws.requests[id]
             responce['result']['time']['end'] = getMilliseconds()
-            responce['error'] = responce['result']['error']['status']
+            # responce['error'] = responce['result']['error']['status']
             del tws.requests[id]
             print('waitResponse end: ', tws.requests)
             # print(responce)
@@ -346,7 +346,7 @@ def placeOrder():
     
     fName = 'placeOrder'
     identification=tws.nextorderId
-    tws.addRequest(id=identification, command=fName, data={ 'orders' : [], 'status' : [] })
+    tws.addRequest(id=identification, command=fName, data={ 'orders' : {}, 'status' : [] })
     
     order = makeOrder(orderId=identification, params=params)
     contract = makeContract(params['symbol'], params['symbol_type'])
@@ -365,7 +365,7 @@ def cancelOrder():
     
     fName = 'cancelOrder'
     identification = int(params['orderId'])
-    tws.addRequest(id=identification, command=fName, data={ 'orders' : [], 'status' : [] })
+    tws.addRequest(id=identification, command=fName, data={ 'orders' : {}, 'status' : [] })
     
     tws.cancelOrder(identification, '')
     
@@ -376,7 +376,7 @@ def orders():
         
     fName = 'orders'
     identification = getMilliseconds()
-    tws.addRequest(id=identification, command=fName, data={ 'orders' : [], 'status' : [] })
+    tws.addRequest(id=identification, command=fName, data={ 'orders' : {}, 'status' : [] })
     
     tws.reqCompletedOrders(False)
     tws.reqOpenOrders()

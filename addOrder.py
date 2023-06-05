@@ -49,13 +49,14 @@ class IBapi(EWrapper, EClient):
         self.nextorderId = orderId
         # print('The next valid order id is: ', self.nextorderId)
 
-    def execDetails(self, reqId, contract, execution):
-        print('Order Executed: ', reqId, contract.symbol, contract.secType, contract.currency, execution.execId, execution.orderId, execution.shares)
-        print('execDetails', execution)
+    # def execDetails(self, reqId, contract, execution):
+    #     print('Order Executed: ', reqId, contract.symbol, contract.secType, contract.currency, execution.execId, execution.orderId, execution.shares)
+    #     print('execDetails', execution)
     
     def orderStatus(self, orderId , status:str, filled, remaining, avgFillPrice:float, permId:int,parentId:int, lastFillPrice:float, clientId:int, whyHeld:str, mktCapPrice: float):
         # print(json.dumps({ 'command' : 'orderStatus', 'orderId' : orderId, 'status' : status, 'filled' : filled, 'remaining' : remaining, 'avgFillPrice' : avgFillPrice, 'permId' : permId, 'parentId' : parentId, 'lastFillPrice' : lastFillPrice}, default=str))
-        sendResult({ 'command' : 'orderStatus', 'orderId' : orderId, 'status' : status, 'filled' : filled, 'remaining' : remaining, 'avgFillPrice' : avgFillPrice, 'permId' : permId, 'parentId' : parentId, 'lastFillPrice' : lastFillPrice})
+        data = { 'command' : 'orderStatus', 'dateTime' : getMilliseconds(), 'orderId' : orderId, 'status' : status, 'filled' : filled, 'remaining' : remaining, 'avgFillPrice' : avgFillPrice, 'permId' : permId, 'parentId' : parentId, 'lastFillPrice' : lastFillPrice }
+        sendResult(data)
 
 
 def run_loop():
@@ -115,12 +116,14 @@ while True:
         # print('waiting for connection')
         time.sleep(1)
 
+def getMilliseconds():
+    return round(time.time()*1000)
 
 order = makeOrder(app.nextorderId, params.account, params.action, params.type, params.tif, params.orth, params.quantity, params.limit_price, params.stop_price, params.trail_stop_price)
 contract = makeContract(params.symbol, params.symbol_type)
 
 #Place order
-print(json.dumps({ 'command' : 'placeOrder', 'orderId' : order.orderId, 'order' : order, 'contract' : contract }, default=str))
+print(json.dumps({ 'command' : 'placeOrder', 'orderId' : order.orderId, 'contract' : vars(contract), 'order' : vars(order), 'status' : 'ApiPending' }, default=str))
 # sendResult({ 'command' : 'placeOrder', 'orderId' : order.orderId, 'order' : order, 'contract' : contract })
 app.placeOrder(order.orderId, contract, order)
 
