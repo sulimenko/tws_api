@@ -78,14 +78,14 @@ class IBapi(EWrapper, EClient):
             self.requests[reqId]['end'] = True
         else:
             print('contractDetails error id: ', reqId, vars(contractDetails))
-        
+      
     def execDetails(self, reqId, contract, execution):
         super().execDetails(reqId, contract, execution)
         data = { 'reqId' : reqId, 'contract' : vars(contract), 'execution' : vars(execution)}
         # print(json.dumps(data, default=str))
         if (reqId in self.requests):
             if self.requests[reqId]['command'] == 'executions':
-                self.requests[reqId]['data']['details'].append(data)
+                self.requests[reqId]['data']['details'][execution.permId] = data
         # sendResult({ 'command' : 'execDetails', 'id' : execution.execId, 'contract' : vars(contract), 'execution' : vars(execution) })
         
     def execDetailsEnd(self, reqId):
@@ -97,10 +97,13 @@ class IBapi(EWrapper, EClient):
     def commissionReport(self, commissionReport):
         super().commissionReport(commissionReport)
         data = vars(commissionReport)
+        # realizedPNL yield_
+        # if data.realizedPNL == 1.7976931348623157e+308:
+            # data.realizedPNL = None
         # print(json.dumps(data, default=str))
         for each in self.requests:
             if self.requests[each]['command'] == 'executions':
-                self.requests[each]['data']['commissionReport'].append(data)
+                self.requests[each]['data']['commission'].append(data)
         
     def orderStatus(self, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice):
         super().orderStatus(orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld, mktCapPrice)
@@ -250,16 +253,26 @@ def waitResponse(id, command, wait = 5):
         return json.dumps(responce, default=str)
 
 #Create contract object
-def makeContract(symbol, type, conId=None, exchange='SMART:ARCA', currency='USD'):
+# def makeContract(symbol, type, conId=None, exchange='SMART:ARCA', currency='USD'):
+def makeContract(params):
     contract = Contract()
-    contract.symbol = symbol
-    contract.secType = type
-    contract.exchange = exchange
-    contract.currency = currency
-    
-    if conId != None:
-        contract.conId = conId
 
+    # if not params:
+    if 'symbol' in params and 'symbol_type' in params and 'currency' in params:    
+        contract.symbol = params['symbol']
+        contract.secType = params['symbol_type']
+        contract.currency = params['currency']
+    if 'lexchange' in params and params['lexchange'] != None:
+        contract.primaryExchange = params['lexchange']
+    if 'conid' in params and params['conid'] != None:
+        contract.conId = params['conid']
+        
+    if 'exchange' in params:
+        contract.exchange = params['exchange']
+    else:
+        contract.exchange = 'SMART'
+
+    # print('contract: ', vars(contract))
     return contract
     
 #Create order object
@@ -282,6 +295,8 @@ def makeOrder(orderId, params):
         order.auxPrice = float(params['stop_price'])
     if 'trail_stop_price' in params:
         order.trailStopPrice = float(params['trail_stop_price'])
+    
+    # print('makeOrder: ', vars(order))
         
     return order
 
@@ -315,9 +330,9 @@ def findSymbol():
     
     fName = 'findSymbol'
     identification=tws.nextorderId
-    tws.addRequest(id=identification, command=fName)
+    tws.addRequest(id=identification, command=fName, data={})
     
-    tws.reqMatchingSymbols(reqId=identification, pattern=params['symbol'])
+    tws.reqMatchingSymbols(reqId=identification, pattern=params['pattern'])
     tws.nextorderId += 1
     
     return waitResponse(id=identification, command=fName)
@@ -330,9 +345,9 @@ def symbolDetail():
     
     fName = 'symbolDetail'
     identification=tws.nextorderId
-    tws.addRequest(id=identification, command=fName)
+    tws.addRequest(id=identification, command=fName, data={})
 
-    contract = makeContract(symbol=params['symbol'], type=params['symbol_type'], conId=params['conId'], currency=params['currency'])
+    contract = makeContract(params)
     tws.reqContractDetails(identification, contract)
     tws.nextorderId += 1
     
@@ -342,14 +357,14 @@ def symbolDetail():
 def placeOrder():
     
     params = json.loads(request.form['data'])
-    print(params)
+    print('placeOrder: ', params)
     
     fName = 'placeOrder'
     identification=tws.nextorderId
     tws.addRequest(id=identification, command=fName, data={ 'orders' : {}, 'status' : [] })
     
     order = makeOrder(orderId=identification, params=params)
-    contract = makeContract(params['symbol'], params['symbol_type'])
+    contract = makeContract(params)
     
     # tws.reqCurrentTime() # ???
     tws.placeOrder(identification, contract, order)
@@ -389,11 +404,11 @@ def executions():
     
     fName = 'executions'
     identification=tws.nextorderId
-    tws.addRequest(id=identification, command=fName, data={ 'execDetails' : [], 'commissionReport' : [] })
+    tws.addRequest(id=identification, command=fName, data={ 'details' : {}, 'commission' : [] })
     
     filter = ExecutionFilter()
-    
     tws.reqExecutions(identification, filter)
+    tws.nextorderId += 1
     
     return waitResponse(id=identification, command=fName)
 
@@ -402,7 +417,7 @@ def accounts():
     
     fName = 'accounts'
     identification = getMilliseconds()
-    tws.addRequest(id=identification, command=fName)
+    tws.addRequest(id=identification, command=fName, data={})
     
     tws.reqManagedAccts()
 
